@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+
+# Python
+__pycache__/
+*.pyc
+
+# TensorFlow/Pytorch学習結果
+*.ckpt
+*.meta
+checkpoint/
+
+# Log
+*.log
+log.txt
+
+# VSCode実行時
+tempCodeRunnerFile.py
+
+# 学習データ
+sgf/
+sgf-2/
