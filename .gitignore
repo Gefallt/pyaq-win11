@@ -8,7 +8,7 @@ __pycache__/
 # TensorFlow/Pytorch学習結果
 *.ckpt
 *.meta
-checkpoint/
+checkpoint
 
 # Log
 *.log
