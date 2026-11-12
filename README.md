@@ -1,3 +1,12 @@
+# バージョンアップ
+
+- Windows11　GPUなし
+- Python 3.11
+- TensorFlow v2 
+引数に”--model”を追加し学習モデル同士の対戦ができる様に改修
+
+supported by Edge's Copilot
+
 # Pyaq
 
 PyaqはPythonのみで実装された囲碁プログラムです。  

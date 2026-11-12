@@ -47,10 +47,10 @@ if __name__ == "__main__":
 
     elif launch_mode == 1:
         b = Board()
-        #if not random:
-        #   tree = search.Tree("model.ckpt", use_gpu)
         if not random:
-
+        
+        #    tree = search.Tree("model.ckpt", use_gpu)
+        
             if model_no == 1:
                 black_model = "model30k.ckpt"
                 white_model = "model.ckpt"
@@ -78,14 +78,24 @@ if __name__ == "__main__":
             #elif quick:
             #    move = rv2ev(np.argmax(tree.evaluate(b)[0][0]))
             #    b.play(move, False)
+            #elif quick:
+            #    tree = black_tree if b.turn == 1 else white_tree
+            #    move = rv2ev(np.argmax(tree.evaluate(b)[0][0]))
+            #    b.play(move, False)
             elif quick:
 
                 tree = black_tree if b.turn == 1 else white_tree
 
-                move = rv2ev(np.argmax(tree.evaluate(b)[0][0]))
+                prob = tree.evaluate(b)[0][0]
+
+                cand_list = b.info()[2]
+
+                best_rv = max(cand_list, key=lambda rv: prob[rv])
+
+                move = rv2ev(best_rv)
 
                 b.play(move, False)
-    
+
             #else:
             #    move, _ = tree.search(b, 0, clean=clean)
             #    b.play(move, False)
