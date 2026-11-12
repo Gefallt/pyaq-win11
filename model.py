@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from board import *
-import tensorflow as tf
+# >>>import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+# <<<
 
 FILTER_CNT = 96
 BLOCK_CNT = 6
@@ -112,23 +115,50 @@ class DualNetwork(object):
 
         return policy, value
 
+    #def create_sess(self, ckpt_path=""):
+    #    with tf.get_default_graph().as_default():
+    #
+    #        sess_ = tf.Session(config=tf.ConfigProto(
+    #            allow_soft_placement=True, log_device_placement=False))
+    #        vars_train = tf.get_collection("vars_train")
+    #        v_to_init = list(set(tf.global_variables()) - set(vars_train))
+    #
+    #        saver = tf.train.Saver(vars_train, write_version=1)
+    #        if ckpt_path != "":
+    #            saver.restore(sess_, ckpt_path)
+    #            sess_.run(tf.variables_initializer(v_to_init))
+    #        else:
+    #            sess_.run(tf.global_variables_initializer())
+    #
+    #    return sess_
     def create_sess(self, ckpt_path=""):
-        with tf.get_default_graph().as_default():
 
-            sess_ = tf.Session(config=tf.ConfigProto(
-                allow_soft_placement=True, log_device_placement=False))
-            vars_train = tf.get_collection("vars_train")
-            v_to_init = list(set(tf.global_variables()) - set(vars_train))
+        sess_ = tf.Session(
+            config=tf.ConfigProto(
+                allow_soft_placement=True,
+                log_device_placement=False
+            )
+        )
 
-            saver = tf.train.Saver(vars_train, write_version=1)
-            if ckpt_path != "":
-                saver.restore(sess_, ckpt_path)
-                sess_.run(tf.variables_initializer(v_to_init))
-            else:
-                sess_.run(tf.global_variables_initializer())
+        vars_train = tf.get_collection("vars_train")
+        v_to_init = list(
+            set(tf.global_variables()) -
+            set(vars_train)
+        )
+
+        saver = tf.train.Saver(
+            vars_train,
+            write_version=1
+        )
+
+        if ckpt_path != "":
+            saver.restore(sess_, ckpt_path)
+            sess_.run(tf.variables_initializer(v_to_init))
+        else:
+            sess_.run(tf.global_variables_initializer())
 
         return sess_
-
+    
     def save_vars(self, sess_, ckpt_path="model.ckpt"):
         with tf.get_default_graph().as_default():
 

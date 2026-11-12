@@ -7,7 +7,10 @@ from board import *
 import model
 import numpy as np
 from sgf import sgf2feed, import_sgf
-import tensorflow as tf
+# >>>import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+# <<<
 
 rnd_array = [np.arange(BVCNT + 1)]
 for i in range(1, 8):

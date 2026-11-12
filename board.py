@@ -342,7 +342,7 @@ class Board(object):
         stderr.write("\n")
 
     def feature(self):
-        feature_ = np.zeros((EBVCNT, FEATURE_CNT), dtype=np.float)
+        feature_ = np.zeros((EBVCNT, FEATURE_CNT), dtype=float)
         my = self.turn
         opp = int(self.turn == 0)
 
@@ -356,8 +356,8 @@ class Board(object):
         return feature_[rv_list, :]
 
     def hash(self):
-        return (hash(self.color.tostring()) ^
-                hash(self.prev_color[0].tostring()) ^ self.turn)
+        return (hash(self.color.tobytes()) ^
+                hash(self.prev_color[0].tobytes()) ^ self.turn)
 
     def info(self):
         empty_list = np.where(self.color == 2)[0]

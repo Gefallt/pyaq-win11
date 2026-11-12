@@ -6,7 +6,10 @@ import time
 from board import *
 import model
 import numpy as np
-import tensorflow as tf
+# >>>import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+# <<<
 
 max_node_cnt = 2 ** 14  # 16384
 expand_cnt = 8
@@ -57,17 +60,54 @@ class Tree(object):
         self.eval_cnt = 0
         Tree.stop = False
 
+    #def set_sess(self, ckpt_path, use_gpu=True):
+    #    device_name = "gpu" if use_gpu else "cpu"
+    #    with tf.get_default_graph().as_default(), tf.device("/%s:0" % device_name):
+    #        dn = model.DualNetwork()
+    #        self.x = tf.placeholder("float", shape=[None, BVCNT, FEATURE_CNT])
+    #        self.pv = dn.model(self.x, temp=0.7, dr=1.0)
+    #        self.sess = dn.create_sess(ckpt_path)
     def set_sess(self, ckpt_path, use_gpu=True):
-        device_name = "gpu" if use_gpu else "cpu"
-        with tf.get_default_graph().as_default(), tf.device("/%s:0" % device_name):
-            dn = model.DualNetwork()
-            self.x = tf.placeholder("float", shape=[None, BVCNT, FEATURE_CNT])
-            self.pv = dn.model(self.x, temp=0.7, dr=1.0)
-            self.sess = dn.create_sess(ckpt_path)
 
+        self.graph = tf.Graph()
+
+        device_name = "gpu" if use_gpu else "cpu"
+
+        with self.graph.as_default():
+            with tf.device("/%s:0" % device_name):
+
+                dn = model.DualNetwork()
+
+                self.x = tf.placeholder(
+                    tf.float32,
+                    shape=[None, BVCNT, FEATURE_CNT]
+                )
+
+                self.pv = dn.model(
+                    self.x,
+                    temp=0.7,
+                    dr=1.0
+                )
+
+                self.sess = dn.create_sess(ckpt_path)
+    
+    #def evaluate(self, b):
+    #    return self.sess.run(self.pv,
+    #                         feed_dict={self.x: np.reshape(b.feature(), (1, BVCNT, 7))})
     def evaluate(self, b):
-        return self.sess.run(self.pv,
-                             feed_dict={self.x: np.reshape(b.feature(), (1, BVCNT, 7))})
+
+        with self.graph.as_default():
+
+            return self.sess.run(
+                self.pv,
+                feed_dict={
+                    self.x: np.reshape(
+                        b.feature(),
+                        (1, BVCNT, 7)
+                    )
+                }
+            )
+
 
     def delete_node(self):
         if self.node_cnt < max_node_cnt * 0.5:

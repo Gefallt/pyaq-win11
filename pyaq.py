@@ -18,7 +18,8 @@ if __name__ == "__main__":
     quick = False
     random = False
     clean = False
-    use_gpu = True
+    use_gpu = False     # ##True
+    model_no = 0
 
     for arg in args:
         if arg.find("self") >= 0:
@@ -37,26 +38,66 @@ if __name__ == "__main__":
             byoyomi = float(arg[arg.find("=") + 1:])
         elif arg.find("cpu") >= 0:
             use_gpu = False
+        elif arg.find("model=") >= 0:
+            model_no = int(arg.split("=")[1])
+    
 
     if launch_mode == 0:
         gtp.call_gtp(main_time, byoyomi, quick, clean, use_gpu)
 
     elif launch_mode == 1:
         b = Board()
+        #if not random:
+        #   tree = search.Tree("model.ckpt", use_gpu)
         if not random:
-            tree = search.Tree("model.ckpt", use_gpu)
 
+            if model_no == 1:
+                black_model = "model30k.ckpt"
+                white_model = "model.ckpt"
+
+            elif model_no == 2:
+                black_model = "model.ckpt"
+                white_model = "model30k.ckpt"
+
+            else:
+                black_model = "model.ckpt"
+                white_model = "model.ckpt"
+
+            stderr.write(
+                "\nBattle Mode %d\nBlack=%s\nWhite=%s\n\n"
+                % (model_no, black_model, white_model)
+            )
+        
+            black_tree = search.Tree(black_model, use_gpu)
+            white_tree = search.Tree(white_model, use_gpu)
+        # <<<
         while b.move_cnt < BVCNT * 2:
             prev_move = b.prev_move
             if random:
                 move = b.random_play()
+            #elif quick:
+            #    move = rv2ev(np.argmax(tree.evaluate(b)[0][0]))
+            #    b.play(move, False)
             elif quick:
-                move = rv2ev(np.argmax(tree.evaluate(b)[0][0]))
-                b.play(move, False)
-            else:
-                move, _ = tree.search(b, 0, clean=clean)
-                b.play(move, False)
 
+                tree = black_tree if b.turn == 1 else white_tree
+
+                move = rv2ev(np.argmax(tree.evaluate(b)[0][0]))
+
+                b.play(move, False)
+    
+            #else:
+            #    move, _ = tree.search(b, 0, clean=clean)
+            #    b.play(move, False)
+            else:
+
+                if b.turn == 1:
+                    move, _ = black_tree.search(b, 0, clean=clean)
+                else:
+                    move, _ = white_tree.search(b, 0, clean=clean)
+
+                b.play(move, False)
+            # <<<
             b.showboard()
             if prev_move == PASS and move == PASS:
                 break
@@ -75,7 +116,11 @@ if __name__ == "__main__":
         else:
             winner = "B" if score > 0 else "W"
             result_str = "%s+%.1f" % (winner, abs(score))
-        sys.stderr.write("result: %s\n" % result_str)
-
+        # >>>sys.stderr.write("result: %s\n" % result_str)
+        sys.stderr.write(
+           "result: %s [B=%s W=%s]\n"
+            % (result_str, black_model, white_model)
+        )
+        # <<<
     else:
         learn.learn(3e-4, 0.5, sgf_dir="sgf/", use_gpu=use_gpu, gpu_cnt=1)
